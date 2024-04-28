@@ -1,6 +1,7 @@
 import fitz
 from transformers import pipeline
 import math
+import os
 
 def extract_text_from_pdf(file_path):
     doc = fitz.open(file_path)
@@ -61,6 +62,32 @@ def extract_text_from_page(pdf_path, page_number):
 
     return text
 
+
+def extract_images_from_pdf(pdf_path, output_path):
+    if not os.path.exists(output_path):
+        os.makedirs(output_path)
+
+    doc = fitz.open(pdf_path)  # Ouvrir le fichier PDF
+    image_list = []
+
+    for page_number in range(len(doc)):
+        page = doc[page_number]
+        image_dict = page.get_images(full=True)  # Obtenir toutes les images de la page
+
+        for img_index, img in enumerate(image_dict, start=1):
+            xref = img[0]  # xref number
+            base_image = doc.extract_image(xref)  # Extraire l'image
+            image_bytes = base_image["image"]  # Les bytes de l'image
+            image_ext = base_image["ext"]  # Le format de l'image
+
+            image_filename = f"{output_path}/image{page_number + 1}_{img_index}.{image_ext}"
+            with open(image_filename, "wb") as img_file:
+                img_file.write(image_bytes)  # Sauvegarder l'image
+
+            image_list.append(image_filename)  # Ajouter le nom du fichier à la liste
+
+    doc.close()
+    return image_list
 
 def summarize_chapters(chapters):
     summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
