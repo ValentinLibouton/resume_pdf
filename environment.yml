@@ -1,0 +1,15 @@
+name: pdf_summary_env_tf
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - pymupdf
+  - tensorflow
+  - transformers
+  - numpy
+  - pandas
+  - scipy
+  - jupyter
+prefix: /home/wm18vw/Documents/EnvironnementsDevPython/miniconda3/envs/pdf_summary_env_tf
+
