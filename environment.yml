@@ -11,5 +11,9 @@ dependencies:
   - pandas
   - scipy
   - jupyter
+  - huggingface_hub
+  - pytorch
+  - spacy
+  - -tqdm
 prefix: /home/wm18vw/Documents/EnvironnementsDevPython/miniconda3/envs/pdf_summary_env_tf
 

@@ -2,6 +2,9 @@ import fitz
 from transformers import pipeline
 import math
 import os
+import spacy
+from transformers import BartTokenizer, BartForConditionalGeneration
+import torch
 
 def extract_text_from_pdf(file_path):
     doc = fitz.open(file_path)
@@ -117,3 +120,46 @@ def summarize_text(text):
 
     # Return only the summary text
     return summary[0]['summary_text']
+
+def import_llama_3():
+    summarizer = pipeline("summarization", model="meta-llama/Meta-Llama-Guard-2-8B")
+def summarize_text_with_llama3(text, import_model=False):
+    """
+    Summarizes the provided text using a pre-initialized summarizer.
+
+    Args:
+    text (str): The text to summarize.
+
+    Returns:
+    str: The summarized text.
+    """
+    if import_model:
+        pass
+    summarizer = pipeline("summarization", model="meta-llama/Meta-Llama-Guard-2-8B")
+    input_length = len(text.split())  # Nombre de mots dans le texte d'entrée
+    max_length = max(30, math.ceil(
+        input_length / 4))  # Ne pas descendre en dessous d'une longueur minimale, par exemple 30 mots
+    min_length = max(20, math.ceil(input_length / 6))
+    # Generate summary
+    summary = summarizer(text, max_length=max_length, min_length=min_length, do_sample=False)
+
+    # Return only the summary text
+    return summary[0]['summary_text']
+
+
+
+
+def init_bart_large_cnn():
+    model_name = 'facebook/bart-large-cnn'
+    tokenizer = BartTokenizer.from_pretrained(model_name)
+    model = BartForConditionalGeneration.from_pretrained(model_name)
+    model.to('cuda' if torch.cuda.is_available() else 'cpu')  # Utiliser GPU si disponible
+
+    return tokenizer, model
+
+def summarize(text):
+    tokenizer, model = init_bart_large_cnn()
+    inputs = tokenizer(text, return_tensors="pt", max_length=1024, truncation=True)
+    inputs = inputs.to('cuda' if torch.cuda.is_available() else 'cpu')  # Envoyer les inputs sur GPU si disponible
+    summary_ids = model.generate(inputs['input_ids'], num_beams=4, max_length=200, early_stopping=True)
+    return tokenizer.decode(summary_ids[0], skip_special_tokens=True)
